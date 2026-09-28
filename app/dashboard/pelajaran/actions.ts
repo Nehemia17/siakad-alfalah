@@ -38,8 +38,15 @@ export async function getSubjects(search?: string) {
   return (data as Subject[]) || [];
 }
 
-export async function createSubject(formData: FormData) {
+async function requireAuth() {
   const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Unauthorized: sesi tidak valid.");
+  return supabase;
+}
+
+export async function createSubject(formData: FormData) {
+  const supabase = await requireAuth();
 
   const teacherId = formData.get("teacher_id") as string;
 
@@ -65,7 +72,7 @@ export async function createSubject(formData: FormData) {
 }
 
 export async function updateSubject(id: string, formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const teacherId = formData.get("teacher_id") as string;
 
@@ -95,7 +102,7 @@ export async function updateSubject(id: string, formData: FormData) {
 }
 
 export async function deleteSubject(id: string) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const { error } = await supabase.from("subjects").delete().eq("id", id);
 

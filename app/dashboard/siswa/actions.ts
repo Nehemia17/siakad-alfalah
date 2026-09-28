@@ -17,6 +17,13 @@ export interface Student {
   updated_at: string;
 }
 
+async function requireAuth() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Unauthorized: sesi tidak valid.");
+  return supabase;
+}
+
 export async function getStudents(search?: string) {
   const supabase = await createClient();
 
@@ -37,7 +44,7 @@ export async function getStudents(search?: string) {
 }
 
 export async function createStudent(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const payload = {
     nisn: formData.get("nisn") as string,
@@ -64,7 +71,7 @@ export async function createStudent(formData: FormData) {
 }
 
 export async function updateStudent(id: string, formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const payload = {
     nisn: formData.get("nisn") as string,
@@ -95,7 +102,7 @@ export async function updateStudent(id: string, formData: FormData) {
 }
 
 export async function deleteStudent(id: string) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const { error } = await supabase.from("students").delete().eq("id", id);
 

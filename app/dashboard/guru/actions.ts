@@ -35,8 +35,15 @@ export async function getTeachers(search?: string) {
   return (data as Teacher[]) || [];
 }
 
-export async function createTeacher(formData: FormData) {
+async function requireAuth() {
   const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Unauthorized: sesi tidak valid.");
+  return supabase;
+}
+
+export async function createTeacher(formData: FormData) {
+  const supabase = await requireAuth();
 
   const payload = {
     nip: (formData.get("nip") as string) || null,
@@ -62,7 +69,7 @@ export async function createTeacher(formData: FormData) {
 }
 
 export async function updateTeacher(id: string, formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const payload = {
     nip: (formData.get("nip") as string) || null,
@@ -92,7 +99,7 @@ export async function updateTeacher(id: string, formData: FormData) {
 }
 
 export async function deleteTeacher(id: string) {
-  const supabase = await createClient();
+  const supabase = await requireAuth();
 
   const { error } = await supabase.from("teachers").delete().eq("id", id);
 
